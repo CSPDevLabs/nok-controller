@@ -18,34 +18,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check for changes in nok-controller folder since last tag
-        id: check_folder_changes
-        run: |
-          CURRENT_COMMIT_SHA=${{ github.sha }}
-          PREVIOUS_TAG_COMMIT_SHA=$(git rev-list --tags --max-count=1 --skip=1 $CURRENT_COMMIT_SHA)
-
-          if [ -z "$PREVIOUS_TAG_COMMIT_SHA" ]; then
-            echo "folder_changed=true" >> $GITHUB_OUTPUT
-          else
-            CHANGED_FILES=$(git diff --name-only $PREVIOUS_TAG_COMMIT_SHA $CURRENT_COMMIT_SHA)
-            if echo "$CHANGED_FILES" | grep -q '^nok-controller/'; then
-              echo "folder_changed=true" >> $GITHUB_OUTPUT
-            else
-              echo "folder_changed=false" >> $GITHUB_OUTPUT
-            fi
-          fi
-
       # Add QEMU to support multi-platform builds
       - name: Set up QEMU
-        if: steps.check_folder_changes.outputs.folder_changed == 'true'
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
-        if: steps.check_folder_changes.outputs.folder_changed == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
-        if: steps.check_folder_changes.outputs.folder_changed == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -54,7 +34,6 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        if: steps.check_folder_changes.outputs.folder_changed == 'true'
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository_owner }}/nok-controller
@@ -63,11 +42,10 @@ jobs:
             type=sha,format=short
 
       - name: Build and push Docker image
-        if: steps.check_folder_changes.outputs.folder_changed == 'true'
         uses: docker/build-push-action@v5
         with:
-          context: ./nok-controller
-          file: ./nok-controller/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: true
           # Added platforms for x86 and ARM64
           platforms: linux/amd64,linux/arm64/v8
