@@ -1,11 +1,11 @@
 # Dockerfile
-FROM python:3.9-slim-buster
+FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy pyproject.toml and install dependencies
+COPY pyproject.toml .
+RUN pip install --no-cache-dir .
 
 # Copy the controller script
 COPY controller.py .
