@@ -1,0 +1,49 @@
+# IDEs
+.vscode
+*.bkp
+.claude
+.cursorignore
+.claude/
+
+# Coverage
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+*.db
+.mypy_cache/
+
+# Logs
+log/
+logs/
+*.log
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Environment files
+.env
+.env.*
+
+# Data
+uploads/
