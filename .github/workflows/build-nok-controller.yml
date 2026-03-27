@@ -47,8 +47,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          # Added platforms for x86 and ARM64
-          platforms: linux/amd64,linux/arm64/v8
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
