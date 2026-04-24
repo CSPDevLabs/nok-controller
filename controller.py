@@ -274,7 +274,25 @@ class NetworkDeviceController:
         gnmic_target_address = (
             f"{ndt_obj['spec']['address']}:{gnmic_spec.get('port', '57400')}"  # Default gNMI port
         )
-        gnmic_target_profile = gnmic_spec.get("targetProfileRef", "default")  # Default profile
+
+        profile = gnmic_spec.get("targetProfileRef", "default")
+
+        # cleanup
+        if isinstance(profile, str):
+            profile = profile.strip()
+        
+        # reject empty or invalid format
+        if not profile:
+            raise ValueError("targetProfileRef cannot be empty")
+            
+        # format validation
+        if " " in profile:
+            raise ValueError(f"Invalid profile '{profile}' (contains spaces)")
+
+        gnmic_target_profile = profile
+
+
+        #gnmic_target_profile = gnmic_spec.get("targetProfileRef", "default")  # Default profile
 
         # Combine labels
         gnmic_labels = common_labels.copy()

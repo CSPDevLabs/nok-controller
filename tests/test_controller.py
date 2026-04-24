@@ -530,3 +530,51 @@ def test_watch_crd_once(monkeypatch, controller):
         pass
 
     assert called["done"] is True
+
+
+
+def test_ensure_gnmic_target_with_valid_profile(monkeypatch, controller):
+    created = {}
+
+    def mock_create(**kwargs):
+        created["body"] = kwargs["body"]
+
+    def mock_get(*args, **kwargs):
+        raise ApiException(status=404)
+
+    monkeypatch.setattr(controller.k8s_api, "get_namespaced_custom_object", mock_get)
+    monkeypatch.setattr(controller.k8s_api, "create_namespaced_custom_object", mock_create)
+
+    ndt = {
+        "metadata": {"name": "dev1", "namespace": "ns"},
+        "spec": {
+            "address": "1.1.1.1",
+            "hostname": "dev1",
+            "gnmic": {
+                "targetProfileRef": "production",
+                "port": 57400
+            },
+            "commonLabels": {"env": "prod"}
+        }
+    }
+
+    controller._ensure_gnmic_target(ndt, create=True)
+
+    body = created["body"]
+    assert body["metadata"]["name"] == "dev1"
+    assert body["metadata"]["namespace"] == "ns"
+    assert body["spec"]["profile"] == "production"
+    assert body["spec"]["address"] == "1.1.1.1:57400"
+    assert body["metadata"]["labels"]["env"] == "prod"
+
+
+def test_empty_profile(monkeypatch, controller):
+    ndt = {
+        "metadata": {"name": "dev1", "namespace": "ns"},
+        "spec": {
+            "address": "1.1.1.1",
+            "gnmic": {"targetProfileRef": "   "}
+        }
+    }
+    with pytest.raises(ValueError):
+        controller._ensure_gnmic_target(ndt, create=True)
