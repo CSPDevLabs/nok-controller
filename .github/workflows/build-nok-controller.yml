@@ -1,13 +1,42 @@
-name: Build and Push nok-controller Docker Image
+name: Test and Build nok-controller
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
 
+  pull_request:
+
 jobs:
-  build-and-push:
+  test:
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest -v
+
+  build-and-push:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: test
+
+    runs-on: ubuntu-latest
+
     permissions:
       contents: read
       packages: write
@@ -18,7 +47,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Add QEMU to support multi-platform builds
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -47,7 +75,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          # Added platforms for x86 and ARM64
           platforms: linux/amd64,linux/arm64/v8
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
