@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
+
   pull_request:
 
 jobs:
@@ -29,6 +32,7 @@ jobs:
           pytest -v
 
   build-and-push:
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: test
 
     runs-on: ubuntu-latest
@@ -70,7 +74,7 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          push: false
+          push: true
           platforms: linux/amd64,linux/arm64/v8
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
